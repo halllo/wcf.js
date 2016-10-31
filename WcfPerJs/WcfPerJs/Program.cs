@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.ServiceModel;
-using System.ServiceModel.Channels;
-using System.ServiceModel.Configuration;
 using System.ServiceModel.Description;
-using System.ServiceModel.Dispatcher;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Owin;
 using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.Hosting;
@@ -20,24 +15,6 @@ namespace WcfPerJs
 {
 	class Program
 	{
-		/*
-		 * Request via Postman:
-		 * 
-		 * POST http://localhost:8080/hello
-		 * Content-Type: application/soap+xml; charset=utf-8
-		 * 
-		 * <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
-		 * <soap:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
-		 * <wsa:To>http://localhost:8080/hello</wsa:To>
-		 * <wsa:Action>http://tempuri.org/IHelloWorldService/SayHello</wsa:Action>
-		 * </soap:Header>
-		 * <soap:Body>
-		 * <SayHello xmlns="http://tempuri.org/">
-		 * </SayHello>
-		 * </soap:Body>
-		 * </soap:Envelope>
-		 * 
-		 */
 		static void Main(string[] args)
 		{
 			var baseAddress = new Uri("http://localhost:8080");
@@ -59,7 +36,7 @@ namespace WcfPerJs
 
 
 				Console.WriteLine("The wcf service is ready at {0}hello", baseAddress);
-				Console.WriteLine("The html is ready at {0}web/jsclient.html", baseAddress);
+				Console.WriteLine("The html is ready at {0}web/jsclient.html", baseAddress); Process.Start(baseAddress + "web/jsclient.html");
 				Console.WriteLine("\nPress <Enter> to stop the service.");
 				Console.ReadLine();
 

@@ -1,68 +1,45 @@
+<!DOCTYPE html>
 <html>
 <head>
-    <title>SOAP JavaScript Client Test</title>
-    <script src="soapclient21.js"></script>
-    <script type="text/javascript">
-        
-        function Hello()
-        {
-            var pl = new SOAPClientParameters();
-            //pl.add("name", "JavaScriptClient ;)");
-            SOAPClient.invoke("http://localhost:8080/hello", "SayHello", pl, true, Hello_callBack);
-        }
-        function Hello_callBack(r)
-        {
-            alert(r);
-        }
+	<title>SOAP-JavaScript-Client Test</title>
 
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
-        function soap() {
-            
-            Hello();
+	<script type="text/javascript">
+		function Hello() {
+			$.ajax({
+				type: "POST",
+				url: "http://localhost:8080/hello",
+				contentType: "application/soap+xml; charset=utf-8",
+				data: '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://www.w3.org/2003/05/soap-envelope">\
+<soap:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">\
+<wsa:To>http://localhost:8080/hello</wsa:To>\
+<wsa:Action>http://tempuri.org/IHelloWorldService/SayHello</wsa:Action>\
+</soap:Header>\
+<soap:Body>\
+<SayHello xmlns="http://tempuri.org/">\
+</SayHello>\
+</soap:Body>\
+</soap:Envelope>',
+				success: function (data) {
+					var xmlstr = new XMLSerializer().serializeToString(data);
+					alert(xmlstr);
+				},
+				error: function (error) {
+					alert(error);
+				}
+			});
 
-
-
-            /*
-            var xmlhttp = new XMLHttpRequest();
-            xmlhttp.open('POST', 'https://somesoapurl.com/', true);
-
-            // build SOAP request
-            var sr =
-                '<?xml version="1.0" encoding="utf-8"?>' +
-                '<soapenv:Envelope ' + 
-                    'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +
-                    'xmlns:api="http://127.0.0.1/Integrics/Enswitch/API" ' +
-                    'xmlns:xsd="http://www.w3.org/2001/XMLSchema" ' +
-                    'xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">' +
-                    '<soapenv:Body>' +
-                        '<api:some_api_call soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">' +
-                            '<username xsi:type="xsd:string">login_username</username>' +
-                            '<password xsi:type="xsd:string">password</password>' +
-                        '</api:some_api_call>' +
-                    '</soapenv:Body>' +
-                '</soapenv:Envelope>';
-
-            xmlhttp.onreadystatechange = function () {
-                if (xmlhttp.readyState == 4) {
-                    if (xmlhttp.status == 200) {
-                        alert('done. use firebug/console to see network response');
-                    }
-                }
-            }
-            // Send the POST request
-            xmlhttp.setRequestHeader('Content-Type', 'text/xml');
-            xmlhttp.send(sr);
-            // send request
-            // ...
-            */
-        }
-    </script>
+		}
+	</script>
 </head>
 <body>
-    <form name="Demo" action="" method="post">
-        <div>
-            <input type="button" value="Soap" onclick="soap();" />
-        </div>
-    </form>
+	<form name="Demo" action="" method="post">
+		<div>
+			<input type="button" value="Soap" onclick="Hello();" />
+		</div>
+	</form>
 </body>
-<html>
+</html>
