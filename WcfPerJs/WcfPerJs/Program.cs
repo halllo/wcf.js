@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
+using System.Net.Http;
 using System.Reflection;
-using System.ServiceModel;
-using System.ServiceModel.Description;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web.Http;
 using Microsoft.Owin;
+using Microsoft.Owin.Cors;
 using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.Hosting;
 using Microsoft.Owin.StaticFiles;
@@ -19,36 +21,32 @@ namespace WcfPerJs
 		{
 			var baseAddress = new Uri("http://localhost:8080");
 
-			using (var signalR = WebApp.Start(baseAddress.ToString()))
-			using (ServiceHost host = new ServiceHost(typeof(HelloWorldService), new Uri(baseAddress, "hello")))
+			using (WebApp.Start(baseAddress.ToString()))
 			{
-				var smb = new ServiceMetadataBehavior();
-				smb.HttpGetEnabled = true;
-				smb.MetadataExporter.PolicyVersion = PolicyVersion.Policy15;
-				host.Description.Behaviors.Add(smb);
-
-
-				var wSHttpBinding = new WSHttpBinding();
-				wSHttpBinding.Security.Mode = SecurityMode.None;
-				var endpoint = host.AddServiceEndpoint(typeof(IHelloWorldService), wSHttpBinding, new Uri("", UriKind.Relative));
-
-				host.Open();
-
-
-				Console.WriteLine("The wcf service is ready at {0}hello", baseAddress);
 				Console.WriteLine("The html is ready at {0}web/jsclient.html", baseAddress); Process.Start(baseAddress + "web/jsclient.html");
-				Console.WriteLine("\nPress <Enter> to stop the service.");
-				Console.ReadLine();
 
-				host.Close();
+				using (var host = Wcf.Start(baseAddress))
+				{
+					Console.WriteLine("The wcf service is ready at {0}hello", baseAddress);
+					Console.WriteLine("\n" + "Press <Enter> to stop the service.");
+					Console.ReadLine();
+					host.Close();
+				}
 			}
 		}
 	}
+
+
+
+
 
 	public class Startup
 	{
 		public void Configuration(IAppBuilder app)
 		{
+			app.UseCors(CorsOptions.AllowAll);
+
+
 			var staticFileOptions = new StaticFileOptions
 			{
 				RequestPath = new PathString("/web"),
@@ -60,23 +58,55 @@ namespace WcfPerJs
 				FileSystem = staticFileOptions.FileSystem,
 			});
 			app.UseStaticFiles(staticFileOptions);
+
+
+			var config = new HttpConfiguration();
+			config.Routes.MapHttpRoute("DefaultApi", "api/{controller}/{id}", new { id = RouteParameter.Optional });
+			app.UseWebApi(config);
 		}
 	}
 
 
 
-	[ServiceContract]
-	public interface IHelloWorldService
-	{
-		[OperationContract]
-		string SayHello();
-	}
 
-	public class HelloWorldService : IHelloWorldService
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	public class WcfController : ApiController
 	{
-		public string SayHello()
+		// POST /api/wcf
+		public async Task<string> Post([FromBody]Message message)
 		{
-			return "Hello, 0, name";
+			try
+			{
+				var httpClient = new HttpClient();
+				var response = await httpClient.PostAsync(message.Url, new StringContent(message.Content, Encoding.UTF8, "application/soap+xml"));
+				var responseString = await response.Content.ReadAsStringAsync();
+				return responseString;
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("FEHLER: " + e.Message);
+				return string.Empty;
+			}
+		}
+
+		public class Message
+		{
+			public string Url { get; set; }
+			public string ContentType { get; set; }
+			public string Content { get; set; }
 		}
 	}
 
@@ -86,82 +116,5 @@ namespace WcfPerJs
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	// CORS?
-
-	//public class CustomHeaderMessageInspector : IDispatchMessageInspector
-	//{
-	//	Dictionary<string, string> requiredHeaders;
-	//	public CustomHeaderMessageInspector(Dictionary<string, string> headers)
-	//	{
-	//		requiredHeaders = headers ?? new Dictionary<string, string>();
-	//	}
-
-	//	public object AfterReceiveRequest(ref System.ServiceModel.Channels.Message request, System.ServiceModel.IClientChannel channel, System.ServiceModel.InstanceContext instanceContext)
-	//	{
-	//		return null;
-	//	}
-
-	//	public void BeforeSendReply(ref System.ServiceModel.Channels.Message reply, object correlationState)
-	//	{
-	//		var httpHeader = reply.Properties["httpResponse"] as HttpResponseMessageProperty;
-	//		foreach (var item in requiredHeaders)
-	//		{
-	//			httpHeader.Headers.Add(item.Key, item.Value);
-	//		}
-	//	}
-	//}
-
-	//public class EnableCrossOriginResourceSharingBehavior : BehaviorExtensionElement, IEndpointBehavior
-	//{
-	//	public void AddBindingParameters(ServiceEndpoint endpoint, System.ServiceModel.Channels.BindingParameterCollection bindingParameters)
-	//	{
-
-	//	}
-
-	//	public void ApplyClientBehavior(ServiceEndpoint endpoint, System.ServiceModel.Dispatcher.ClientRuntime clientRuntime)
-	//	{
-
-	//	}
-
-	//	public void ApplyDispatchBehavior(ServiceEndpoint endpoint, System.ServiceModel.Dispatcher.EndpointDispatcher endpointDispatcher)
-	//	{
-	//		var requiredHeaders = new Dictionary<string, string>();
-
-	//		requiredHeaders.Add("Access-Control-Allow-Origin", "*");
-	//		requiredHeaders.Add("Access-Control-Request-Method", "POST,GET,PUT,DELETE,OPTIONS");
-	//		requiredHeaders.Add("Access-Control-Allow-Headers", "X-Requested-With,Content-Type");
-
-	//		endpointDispatcher.DispatchRuntime.MessageInspectors.Add(new CustomHeaderMessageInspector(requiredHeaders));
-	//	}
-
-	//	public void Validate(ServiceEndpoint endpoint)
-	//	{
-
-	//	}
-
-	//	public override Type BehaviorType
-	//	{
-	//		get { return typeof(EnableCrossOriginResourceSharingBehavior); }
-	//	}
-
-	//	protected override object CreateBehavior()
-	//	{
-	//		return new EnableCrossOriginResourceSharingBehavior();
-	//	}
-	//}
 
 }

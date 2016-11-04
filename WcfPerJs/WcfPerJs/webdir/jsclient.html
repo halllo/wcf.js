@@ -9,11 +9,15 @@
 
 	<script type="text/javascript">
 		function Hello() {
+
 			$.ajax({
 				type: "POST",
-				url: "http://localhost:8080/hello",
-				contentType: "application/soap+xml; charset=utf-8",
-				data: '<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://www.w3.org/2003/05/soap-envelope">\
+				url: "http://localhost:8080/api/wcf",
+				data: { 
+					url: 'http://localhost:8080/hello', 
+					contentType: 'application/soap+xml; charset=utf-8', 
+					content: 
+'<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://www.w3.org/2003/05/soap-envelope">\
 <soap:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">\
 <wsa:To>http://localhost:8080/hello</wsa:To>\
 <wsa:Action>http://tempuri.org/IHelloWorldService/SayHello</wsa:Action>\
@@ -22,10 +26,15 @@
 <SayHello xmlns="http://tempuri.org/">\
 </SayHello>\
 </soap:Body>\
-</soap:Envelope>',
+</soap:Envelope>'
+				},
 				success: function (data) {
-					var xmlstr = new XMLSerializer().serializeToString(data);
-					alert(xmlstr);
+					var xmlDoc = $.parseXML(data);
+					var xml = $(xmlDoc);
+					var body = xml.find("Body");
+					var bodyStr = body.text();
+					
+					alert(bodyStr);
 				},
 				error: function (error) {
 					alert(error);
