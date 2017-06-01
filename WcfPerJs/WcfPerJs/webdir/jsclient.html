@@ -8,7 +8,7 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 	<script type="text/javascript">
-		function Hello() {
+		function HelloWcfOverWebApi() {
 
 			$.ajax({
 				type: "POST",
@@ -42,12 +42,44 @@
 			});
 
 		}
+		function HelloDirectlyWcf() {
+
+			$.ajax({
+				type: "POST",
+				url: "http://localhost:8080/hello",
+				contentType: 'application/soap+xml; charset=utf-8', 
+				data:
+'<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://www.w3.org/2003/05/soap-envelope">\
+<soap:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">\
+<wsa:To>http://localhost:8080/hello</wsa:To>\
+<wsa:Action>http://tempuri.org/IHelloWorldService/SayHello</wsa:Action>\
+</soap:Header>\
+<soap:Body>\
+<SayHello xmlns="http://tempuri.org/">\
+</SayHello>\
+</soap:Body>\
+</soap:Envelope>',
+				dataType: "xml",
+				success: function (data) {
+					var xml = $(data);
+					var body = xml.find("Body");
+					var bodyStr = body.text();
+					
+					alert(bodyStr);
+				},
+				error: function (error) {
+					alert(error);
+				}
+			});
+
+		}
 	</script>
 </head>
 <body>
 	<form name="Demo" action="" method="post">
 		<div>
-			<input type="button" value="Soap" onclick="Hello();" />
+			<input type="button" value="Soap WCF over WebAPI" onclick="HelloWcfOverWebApi();" />
+			<input type="button" value="Soap WCF directly" onclick="HelloDirectlyWcf();" />
 		</div>
 	</form>
 </body>
