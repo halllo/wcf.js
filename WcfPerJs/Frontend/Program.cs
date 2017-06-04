@@ -19,7 +19,7 @@ namespace Frontend
 	{
 		static void Main(string[] args)
 		{
-			var baseAddress = new Uri("http://localhost:8080");
+			var baseAddress = new Uri("http://localhost:8082"); //selbe origin wie das backend; geht :)
 
 			using (WebApp.Start(baseAddress.ToString()))
 			{

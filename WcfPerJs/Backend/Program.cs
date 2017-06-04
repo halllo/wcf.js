@@ -18,7 +18,7 @@ namespace Backend
 		{
 			var baseAddress = new Uri("http://localhost:8082");
 
-			using (WebApp.Start(baseAddress.ToString()))
+			//using (WebApp.Start(baseAddress.ToString()))
 			using (var host = Wcf.Start(baseAddress))
 			{
 				Console.WriteLine("The WCF service is ready at {0}hello", baseAddress);
