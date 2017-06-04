@@ -13,28 +13,25 @@ using Microsoft.Owin.Hosting;
 using Microsoft.Owin.StaticFiles;
 using Owin;
 
-namespace WcfPerJs
+namespace BackendBridge
 {
 	class Program
 	{
 		static void Main(string[] args)
 		{
-			var baseAddress = new Uri("http://localhost:8080");
+			var baseAddress = new Uri("http://localhost:8081");
 
 			using (WebApp.Start(baseAddress.ToString()))
 			{
-				Console.WriteLine("The html is ready at {0}web/jsclient.html", baseAddress); Process.Start(baseAddress + "web/jsclient.html");
+				Console.WriteLine("The Web API is ready at {0}api/wcf", baseAddress);
 
-				using (var host = Wcf.Start(baseAddress))
-				{
-					Console.WriteLine("The wcf service is ready at {0}hello", baseAddress);
-					Console.WriteLine("\n" + "Press <Enter> to stop the service.");
-					Console.ReadLine();
-					host.Close();
-				}
+				Console.WriteLine("\n" + "Press <Enter> to stop the service.");
+				Console.ReadLine();
 			}
 		}
 	}
+
+
 
 
 
@@ -47,36 +44,11 @@ namespace WcfPerJs
 			app.UseCors(CorsOptions.AllowAll);
 
 
-			var staticFileOptions = new StaticFileOptions
-			{
-				RequestPath = new PathString("/web"),
-				FileSystem = new PhysicalFileSystem(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "webdir"))
-			};
-			app.UseDefaultFiles(new DefaultFilesOptions
-			{
-				RequestPath = staticFileOptions.RequestPath,
-				FileSystem = staticFileOptions.FileSystem,
-			});
-			app.UseStaticFiles(staticFileOptions);
-
-
 			var config = new HttpConfiguration();
 			config.Routes.MapHttpRoute("DefaultApi", "api/{controller}/{id}", new { id = RouteParameter.Optional });
 			app.UseWebApi(config);
 		}
 	}
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -109,12 +81,6 @@ namespace WcfPerJs
 			public string Content { get; set; }
 		}
 	}
-
-
-
-
-
-
 
 
 }

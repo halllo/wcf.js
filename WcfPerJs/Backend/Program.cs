@@ -1,9 +1,35 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.ServiceModel;
 using System.ServiceModel.Description;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace WcfPerJs
+namespace Backend
 {
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			var baseAddress = new Uri("http://localhost:8082");
+
+			using (var host = Wcf.Start(baseAddress))
+			{
+				Console.WriteLine("The WCF service is ready at {0}hello", baseAddress);
+
+				Console.WriteLine("\n" + "Press <Enter> to stop the service.");
+				Console.ReadLine();
+				host.Close();
+			}
+		}
+	}
+
+
+
+
+
+
 	public class Wcf
 	{
 		public static ServiceHost Start(Uri baseAddress)
@@ -33,7 +59,7 @@ namespace WcfPerJs
 		[OperationContract]
 		string SayHello();
 	}
-	
+
 	public class HelloWorldService : IHelloWorldService
 	{
 		public string SayHello()
