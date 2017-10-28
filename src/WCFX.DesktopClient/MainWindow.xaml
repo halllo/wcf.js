@@ -1,0 +1,31 @@
+﻿<Window x:Class="WCFX.DesktopClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ctx="clr-namespace:CommandContext;assembly=CommandContext"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10" >
+			<CheckBox Content="RunWithFullAccessRights" IsChecked="{Binding RunWithFullAccessRights}" Margin="10" />
+			<Button Content="Akten Laden" Command="{ctx:CommandBinding 'AktenLaden()'}" Margin="10" Width="150" />
+		</StackPanel>
+
+		<ListBox Grid.Row="1" ItemsSource="{Binding Akten}">
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<TextBlock Text="{Binding ReferenceNumber}"></TextBlock>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+
+		<TextBlock Grid.Row="2" Text="{Binding Akten.Count,StringFormat={}{0} Akten geladen}" Margin="10"></TextBlock>
+	</Grid>
+</Window>
