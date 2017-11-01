@@ -13,42 +13,45 @@ namespace WCFX.Server
 
 		static Program()
 		{
-			Log("starting Web at 'https://localhost:8001/wb'", ConsoleColor.White);
+			var (serverAddress, netTcpPort, httpsPort) = GetServerConfig();
+
+			Log($"starting Web at 'https://{serverAddress}:{httpsPort}/wb'", ConsoleColor.White);
 			StartWebServer();
-			Log($"starting WCF at 'net.tcp://localhost:8000/WCFX/{typeof(IDossierService).FullName}' and 'https://localhost:8001/WCFX/{typeof(IDossierService).FullName}'", ConsoleColor.White);
+			Log($"starting WCF at 'net.tcp://{serverAddress}:{netTcpPort}/WCFX/{typeof(IDossierService).FullName}' and 'https://{serverAddress}:{httpsPort}/WCFX/{typeof(IDossierService).FullName}'", ConsoleColor.White);
 			StartService<IDossierService, DossierService>();
 		}
 
 
 		private static void StartWebServer()
 		{
-			var (serverAddress, serverPort) = GetServerConfig();
-			var uri = new Uri($"https://{serverAddress}:{serverPort + 1}");
+			var (serverAddress, netTcpPort, httpsPort) = GetServerConfig();
+			var uri = new Uri($"https://{serverAddress}:{httpsPort}");
 			WebApp.Start(uri.ToString());
 		}
 
 
 		private static void StartService<TInterface, TImplementation>() where TImplementation : TInterface, new()
 		{
-			var (serverAddress, serverPort) = GetServerConfig();
+			var (serverAddress, netTcpPort, httpsPort) = GetServerConfig();
 			var maxReceivedMessageSize = long.Parse(ConfigurationManager.AppSettings["MaxReceivedMessageSize"]);
 
 			WcfService.Host<TImplementation>()
 				.AddNetTcpEndpoint<TInterface>(
-					address: $"{serverAddress}:{serverPort}/WCFX/{typeof(TInterface).FullName}",
+					address: $"{serverAddress}:{netTcpPort}/WCFX/{typeof(TInterface).FullName}",
 					maxReceivedMessageSize: maxReceivedMessageSize)
 				.AddHttpsEndpoint<TInterface>(
-					address: $"{serverAddress}:{serverPort + 1}/WCFX/{typeof(TInterface).FullName}",
+					address: $"{serverAddress}:{httpsPort}/WCFX/{typeof(TInterface).FullName}",
 					isMtomEnabled: false,
 					maxReceivedMessageSize: maxReceivedMessageSize)
 				.Start();
 		}
 
-		private static (string server, int port) GetServerConfig()
+		private static (string server, int netTcpPort, int httpsPort) GetServerConfig()
 		{
 			var serverAddress = ConfigurationManager.AppSettings["ServerAddress"];
-			var serverPort = Int32.Parse(ConfigurationManager.AppSettings["ServerPort"]);
-			return (serverAddress, serverPort);
+			var netTcpPort = Int32.Parse(ConfigurationManager.AppSettings["NetTcpPort"]);
+			var httpsPort = Int32.Parse(ConfigurationManager.AppSettings["HttpsPort"]);
+			return (serverAddress, netTcpPort, httpsPort);
 		}
 
 
