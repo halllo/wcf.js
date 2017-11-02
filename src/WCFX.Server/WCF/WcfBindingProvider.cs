@@ -11,27 +11,10 @@ namespace WCFX.Server.WCF
 			binding.MaxReceivedMessageSize = maxReceivedMessageSize;
 			binding.MaxBufferSize = (int)Math.Min(Int32.MaxValue, maxReceivedMessageSize);
 			binding.ReaderQuotas.MaxStringContentLength = int.MaxValue;
+			binding.Security.Mode = SecurityMode.Transport;
+			binding.Security.Transport.ClientCredentialType = TcpClientCredentialType.Windows;
 
 			return binding;
-		}
-
-		public static WSHttpBinding GetWsHttpBinding(long maxReceivedMessageSize, bool isMtomEnabled, bool useWindowsAuthentication = false)
-		{
-			var wsHttpBinding = new WSHttpBinding();
-			wsHttpBinding.MaxReceivedMessageSize = maxReceivedMessageSize;
-			wsHttpBinding.ReaderQuotas.MaxStringContentLength = int.MaxValue;
-			wsHttpBinding.ReaderQuotas.MaxArrayLength = int.MaxValue;
-			wsHttpBinding.ReaderQuotas.MaxDepth = int.MaxValue;
-			wsHttpBinding.ReaderQuotas.MaxBytesPerRead = int.MaxValue;
-			wsHttpBinding.ReaderQuotas.MaxNameTableCharCount = int.MaxValue;
-			wsHttpBinding.MessageEncoding = isMtomEnabled ? WSMessageEncoding.Mtom : WSMessageEncoding.Text;
-
-			if (useWindowsAuthentication == false)
-			{
-				wsHttpBinding.Security.Mode = SecurityMode.None;
-			}
-
-			return wsHttpBinding;
 		}
 
 		public static WSHttpBinding GetSecuredWsHttpBindingWithWindowsAuthentication(long maxReceivedMessageSize, bool isMtomEnabled)

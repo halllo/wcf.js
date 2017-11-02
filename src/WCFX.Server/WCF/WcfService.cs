@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
@@ -25,6 +26,7 @@ namespace WCFX.Server.WCF
 			var wcf = new WcfService();
 
 			wcf.mServiceHost = new ServiceHost(serviceImplementation);
+			//wcf.mServiceHost.Credentials.ServiceCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.Root, X509FindType.FindBySubjectName, "localhost");
 
 			return wcf;
 		}
@@ -33,14 +35,6 @@ namespace WCFX.Server.WCF
 		{
 			var binding = WcfBindingProvider.GetNetTcpBinding(maxReceivedMessageSize);
 			AddEndpoint<TContract>(string.Concat("net.tcp://", address), binding);
-
-			return this;
-		}
-
-		public WcfService AddHttpEndpoint<TContract>(string address, bool isMtomEnabled, long maxReceivedMessageSize, bool useWindowsAuthentication = false)
-		{
-			var wsHttpBinding = WcfBindingProvider.GetWsHttpBinding(maxReceivedMessageSize, isMtomEnabled, useWindowsAuthentication);
-			AddEndpoint<TContract>(string.Concat("http://", address), wsHttpBinding);
 
 			return this;
 		}
