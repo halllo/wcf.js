@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ServiceModel;
 
-namespace WCFX.Server.WCF
+namespace WCFX.DesktopClient
 {
 	public static class WcfBindingProvider
 	{
@@ -13,7 +13,7 @@ namespace WCFX.Server.WCF
 			binding.ReaderQuotas.MaxStringContentLength = int.MaxValue;
 			binding.Security.Mode = SecurityMode.TransportWithMessageCredential;
 			binding.Security.Message.ClientCredentialType = MessageCredentialType.IssuedToken;
-
+			
 			return binding;
 		}
 

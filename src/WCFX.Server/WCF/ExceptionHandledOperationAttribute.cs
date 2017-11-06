@@ -3,6 +3,7 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
+using System.Threading;
 
 namespace WCFX.Server.WCF
 {
@@ -117,37 +118,25 @@ namespace WCFX.Server.WCF
 
 		public override object Invoke(object instance, object[] inputs, out object[] outputs)
 		{
-			var username = GetWindowsUserName();
+			var username = GetUserName();
 			Program.Log($"Request von {username}", ConsoleColor.Cyan);
-			Program.CurrentUser = username;
 
 			var result = DecoratedOperationInvoker.Invoke(instance, inputs, out outputs);
 			return result;
 		}
 
-		private string GetWindowsUserName()
+		private string GetUserName()
 		{
-			if (OperationContext.Current != null && OperationContext.Current.ServiceSecurityContext != null && OperationContext.Current.ServiceSecurityContext.WindowsIdentity != null)
+			var claimsPrincipal = Thread.CurrentPrincipal;
+			if (claimsPrincipal != null)
 			{
-				return OperationContext.Current.ServiceSecurityContext.WindowsIdentity.Name;
+				var username = claimsPrincipal.Identity.Name;
+				return username;
 			}
-
-			if (OperationContext.Current != null && OperationContext.Current.ServiceSecurityContext == null)
+			else
 			{
-				var usernameHeaderIndex = OperationContext.Current.IncomingMessageHeaders.FindHeader("Username", "WCFX");
-
-				if (usernameHeaderIndex > -1)
-				{
-					var username = OperationContext.Current.IncomingMessageHeaders.GetHeader<string>(usernameHeaderIndex);
-					return username;
-				}
-				else
-				{
-					throw new Exception("Es konnte kein Benutzername-Message-Header gefunden werden.");
-				}
+				throw new Exception("Es konnte kein Benutzername-Message-Header gefunden werden.");
 			}
-
-			return null;
 		}
 	}
 
@@ -161,8 +150,6 @@ namespace WCFX.Server.WCF
 
 		public override object Invoke(object instance, object[] inputs, out object[] outputs)
 		{
-			Program.CurrentUser = null;
-
 			var result = DecoratedOperationInvoker.Invoke(instance, inputs, out outputs);
 			return result;
 		}

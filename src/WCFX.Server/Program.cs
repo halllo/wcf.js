@@ -3,14 +3,13 @@ using System.Configuration;
 using Microsoft.Owin.Hosting;
 using WCFX.Common;
 using WCFX.Server.WCF;
+using System.IdentityModel.Configuration;
+using System.ServiceModel.Description;
 
 namespace WCFX.Server
 {
 	public class Program
 	{
-		[ThreadStatic]
-		public static string CurrentUser;
-
 		static Program()
 		{
 			var (serverAddress, netTcpPort, httpsPort) = GetServerConfig();
@@ -33,17 +32,12 @@ namespace WCFX.Server
 		private static void StartService<TInterface, TImplementation>() where TImplementation : TInterface, new()
 		{
 			var (serverAddress, netTcpPort, httpsPort) = GetServerConfig();
+			var host = WcfService.Host<TImplementation>(serverAddress);
 			var maxReceivedMessageSize = long.Parse(ConfigurationManager.AppSettings["MaxReceivedMessageSize"]);
-
-			WcfService.Host<TImplementation>()
-				.AddNetTcpEndpoint<TInterface>(
-					address: $"{serverAddress}:{netTcpPort}/WCFX/{typeof(TInterface).FullName}",
-					maxReceivedMessageSize: maxReceivedMessageSize)
-				.AddHttpsEndpoint<TInterface>(
-					address: $"{serverAddress}:{httpsPort}/WCFX/{typeof(TInterface).FullName}",
-					isMtomEnabled: false,
-					maxReceivedMessageSize: maxReceivedMessageSize)
-				.Start();
+			//host.AddEndpoint<TInterface>($"net.tcp://{serverAddress}:{netTcpPort}/WCFX/{typeof(TInterface).FullName}", WcfBindingProvider.NetTcpBinding(maxReceivedMessageSize));
+			host.AddEndpoint<TInterface>($"https://{serverAddress}:{netTcpPort}/WCFX/{typeof(TInterface).FullName}", WcfBindingProvider.WS2007FederationHttpBinding(maxReceivedMessageSize));
+			host.AddEndpoint<TInterface>($"https://{serverAddress}:{httpsPort}/WCFX/{typeof(TInterface).FullName}", WcfBindingProvider.WsHttpBinding_WithWindowsAuthentication(maxReceivedMessageSize, isMtomEnabled: false));
+			host.Start();
 		}
 
 		private static (string server, int netTcpPort, int httpsPort) GetServerConfig()

@@ -5,20 +5,32 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ctx="clr-namespace:CommandContext;assembly=CommandContext"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="350" Width="625">
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition/>
 			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="1*"/>
+			<ColumnDefinition Width="2*"/>
+		</Grid.ColumnDefinitions>
 
-		<StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10" >
-			<CheckBox Content="RunWithFullAccessRights" IsChecked="{Binding RunWithFullAccessRights}" Margin="10" />
-			<Button Content="Akten Laden" Command="{ctx:CommandBinding 'AktenLaden()'}" Margin="10" Width="150" />
-		</StackPanel>
-
-		<ListBox Grid.Row="1" ItemsSource="{Binding Akten}">
+		<Grid Grid.Row="0" Grid.Column="0" Margin="10" >
+			<Button Content="Sign in" Command="{ctx:CommandBinding 'SignIn(this)'}" Margin="10" />
+		</Grid>
+		<TextBox Grid.Row="1" Grid.Column="0" Text="{Binding AccessToken,Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"/>
+		
+		<Grid Grid.Row="0" Grid.Column="1" Margin="10" >
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition/>
+				<ColumnDefinition/>
+			</Grid.ColumnDefinitions>
+			<Button Grid.Column="0" Content="Akten Laden" Command="{ctx:CommandBinding 'AktenLaden()'}" Margin="10" />
+			<CheckBox Grid.Column="1" Content="RunWithFullAccessRights" IsChecked="{Binding RunWithFullAccessRights}" Margin="10" VerticalAlignment="Center" />
+		</Grid>
+		<ListBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Akten}">
 			<ListBox.ItemTemplate>
 				<DataTemplate>
 					<TextBlock Text="{Binding ReferenceNumber}"></TextBlock>

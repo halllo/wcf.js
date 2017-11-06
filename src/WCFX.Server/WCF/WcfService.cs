@@ -1,4 +1,5 @@
 using System;
+using System.IdentityModel.Configuration;
 using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
@@ -12,39 +13,22 @@ namespace WCFX.Server.WCF
 		{
 		}
 
-		public static WcfService Host<TService>()
+		public static WcfService Host<TService>(string serverCertSubjectName)
 		{
-			var wcf = new WcfService();
+			var identityConfig = new IdentityConfiguration();
+			identityConfig.SecurityTokenHandlers.Clear();
+			identityConfig.SecurityTokenHandlers.Add(new JwtValidator());
+			identityConfig.ClaimsAuthorizationManager = new RequireAuthenticationAuthorization();
 
-			wcf.mServiceHost = new ServiceHost(typeof(TService));
+			var serviceHost = new ServiceHost(typeof(TService));
+			serviceHost.Credentials.IdentityConfiguration = identityConfig;
+			serviceHost.Credentials.UseIdentityConfiguration = true;
+			serviceHost.Credentials.ServiceCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.Root, X509FindType.FindBySubjectName, serverCertSubjectName);
 
-			return wcf;
-		}
+			var authz = serviceHost.Description.Behaviors.Find<ServiceAuthorizationBehavior>();
+			authz.PrincipalPermissionMode = PrincipalPermissionMode.Always;
 
-		public static WcfService Host(object serviceImplementation)
-		{
-			var wcf = new WcfService();
-
-			wcf.mServiceHost = new ServiceHost(serviceImplementation);
-			//wcf.mServiceHost.Credentials.ServiceCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.Root, X509FindType.FindBySubjectName, "localhost");
-
-			return wcf;
-		}
-
-		public WcfService AddNetTcpEndpoint<TContract>(string address, long maxReceivedMessageSize)
-		{
-			var binding = WcfBindingProvider.GetNetTcpBinding(maxReceivedMessageSize);
-			AddEndpoint<TContract>(string.Concat("net.tcp://", address), binding);
-
-			return this;
-		}
-
-		public WcfService AddHttpsEndpoint<TContract>(string address, bool isMtomEnabled, long maxReceivedMessageSize)
-		{
-			var customBinding = WcfBindingProvider.GetSecuredWsHttpBindingWithWindowsAuthentication(maxReceivedMessageSize, isMtomEnabled);
-			AddEndpoint<TContract>(string.Concat("https://", address), customBinding);
-
-			return this;
+			return new WcfService { mServiceHost = serviceHost };
 		}
 
 		public ServiceHost Start()
@@ -57,7 +41,7 @@ namespace WCFX.Server.WCF
 			return mServiceHost;
 		}
 
-		private ServiceEndpoint AddEndpoint<TContract>(string address, Binding binding)
+		public ServiceEndpoint AddEndpoint<TContract>(string address, Binding binding)
 		{
 			var serviceEndpoint = mServiceHost.AddServiceEndpoint(typeof(TContract), binding, address);
 			serviceEndpoint.Binding.OpenTimeout = mTimeoutDuration;
