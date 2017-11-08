@@ -32,19 +32,18 @@ namespace WCFX.Server
 		private static void StartService<TInterface, TImplementation>() where TImplementation : TInterface, new()
 		{
 			var (serverAddress, netTcpPort, httpsPort) = GetServerConfig();
-			var host = WcfService.Host<TImplementation>(serverAddress);
 			var maxReceivedMessageSize = long.Parse(ConfigurationManager.AppSettings["MaxReceivedMessageSize"]);
-			//host.AddEndpoint<TInterface>($"net.tcp://{serverAddress}:{netTcpPort}/WCFX/{typeof(TInterface).FullName}", WcfBindingProvider.NetTcpBinding(maxReceivedMessageSize));
-			host.AddEndpoint<TInterface>($"https://{serverAddress}:{netTcpPort}/WCFX/{typeof(TInterface).FullName}", WcfBindingProvider.WS2007FederationHttpBinding(maxReceivedMessageSize));
-			host.AddEndpoint<TInterface>($"https://{serverAddress}:{httpsPort}/WCFX/{typeof(TInterface).FullName}", WcfBindingProvider.WsHttpBinding_WithWindowsAuthentication(maxReceivedMessageSize, isMtomEnabled: false));
-			host.Start();
+
+			var wcfFactory = new WcfService(urlInfix: "WCFX");
+			wcfFactory.HostNetTcp<TImplementation, TInterface>(serverAddress, netTcpPort, maxReceivedMessageSize);
+			wcfFactory.HostWS2007FederationHttp<TImplementation, TInterface>(serverAddress, httpsPort, maxReceivedMessageSize);
 		}
 
 		private static (string server, int netTcpPort, int httpsPort) GetServerConfig()
 		{
 			var serverAddress = ConfigurationManager.AppSettings["ServerAddress"];
-			var netTcpPort = Int32.Parse(ConfigurationManager.AppSettings["NetTcpPort"]);
-			var httpsPort = Int32.Parse(ConfigurationManager.AppSettings["HttpsPort"]);
+			var netTcpPort = int.Parse(ConfigurationManager.AppSettings["NetTcpPort"]);
+			var httpsPort = int.Parse(ConfigurationManager.AppSettings["HttpsPort"]);
 			return (serverAddress, netTcpPort, httpsPort);
 		}
 

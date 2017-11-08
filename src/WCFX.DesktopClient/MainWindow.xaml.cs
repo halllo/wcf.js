@@ -41,7 +41,7 @@ namespace WCFX.DesktopClient
 				Akten = App.ServiceProvider.Execute<IDossierService, List<DossierDto>>(AccessToken, s => s.GetAll(RunWithFullAccessRights));
 				OnPropertyChanged(nameof(Akten));
 			}
-			catch (System.Exception e)
+			catch (Exception e)
 			{
 				MessageBox.Show(e.ToString());
 			}

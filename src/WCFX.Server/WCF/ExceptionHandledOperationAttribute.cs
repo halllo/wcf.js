@@ -118,25 +118,15 @@ namespace WCFX.Server.WCF
 
 		public override object Invoke(object instance, object[] inputs, out object[] outputs)
 		{
-			var username = GetUserName();
+			var username = Jwt.CurrentUser;
+			if (string.IsNullOrWhiteSpace(username)) throw new Exception("Es konnte kein Benutzername-Message-Header gefunden werden.");
+
 			Program.Log($"Request von {username}", ConsoleColor.Cyan);
 
 			var result = DecoratedOperationInvoker.Invoke(instance, inputs, out outputs);
-			return result;
-		}
 
-		private string GetUserName()
-		{
-			var claimsPrincipal = Thread.CurrentPrincipal;
-			if (claimsPrincipal != null)
-			{
-				var username = claimsPrincipal.Identity.Name;
-				return username;
-			}
-			else
-			{
-				throw new Exception("Es konnte kein Benutzername-Message-Header gefunden werden.");
-			}
+			Jwt.CurrentUser = null;
+			return result;
 		}
 	}
 

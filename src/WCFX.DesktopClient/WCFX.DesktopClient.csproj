@@ -68,8 +68,7 @@
     </ApplicationDefinition>
     <Compile Include="TokenStuff.cs" />
     <Compile Include="ViewModel.cs" />
-    <Compile Include="Wcf.cs" />
-    <Compile Include="WcfBindingProvider.cs" />
+    <Compile Include="WcfClient.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

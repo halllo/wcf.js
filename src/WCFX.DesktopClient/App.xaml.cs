@@ -4,7 +4,7 @@ namespace WCFX.DesktopClient
 {
 	public partial class App : Application
 	{
-		public static readonly WcfServiceProvider ServiceProvider = new WcfServiceProvider();
+		public static readonly WcfClient ServiceProvider = new WcfClient();
 
 		static App()
 		{

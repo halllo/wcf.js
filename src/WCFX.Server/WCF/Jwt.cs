@@ -7,19 +7,11 @@ using System.IdentityModel.Selectors;
 using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Claims;
-using System.Threading;
+using System.ServiceModel;
 
 namespace WCFX.Server.WCF
 {
-	class RequireAuthenticationAuthorization : ClaimsAuthorizationManager
-	{
-		public override bool CheckAccess(AuthorizationContext context)
-		{
-			return context.Principal.Identity.IsAuthenticated;
-		}
-	}
-
-	class JwtValidator : Saml2SecurityTokenHandler
+	public static class Jwt
 	{
 		static string _tenant = ConfigurationManager.AppSettings["ida:Tenant"];
 		static string _audience = ConfigurationManager.AppSettings["ida:Audience"];
@@ -28,19 +20,7 @@ namespace WCFX.Server.WCF
 		static List<SecurityToken> _signingTokens = null;
 		static DateTime _stsMetadataRetrievalTime = DateTime.MinValue;
 		
-		public override ReadOnlyCollection<ClaimsIdentity> ValidateToken(SecurityToken token)
-		{
-			var saml = token as Saml2SecurityToken;
-			var samlAttributeStatement = saml.Assertion.Statements.OfType<Saml2AttributeStatement>().FirstOrDefault();
-			var jwt = samlAttributeStatement.Attributes.Where(sa => sa.Name.Equals("jwt", StringComparison.OrdinalIgnoreCase)).SingleOrDefault().Values.Single();
-
-			var principal = ValidateJwt(jwt);
-			Thread.CurrentPrincipal = principal;
-			
-			return new ReadOnlyCollection<ClaimsIdentity>(new List<ClaimsIdentity> { principal.Identities.First() });
-		}
-
-		ClaimsPrincipal ValidateJwt(string jwt)
+		public static ClaimsPrincipal Validate(string jwt)
 		{
 			try
 			{
@@ -69,12 +49,83 @@ namespace WCFX.Server.WCF
 					throw new SecurityTokenValidationException("Insufficient Scope");
 				}
 
+				Username = claimsPrincipal.Identity.Name;
+
 				return claimsPrincipal;
 			}
 			catch (Exception)
 			{
 				throw;
 			}
+		}
+
+
+		[ThreadStatic]
+		private static string Username = null;
+		public static string CurrentUser
+		{
+			get
+			{
+				var jwtInUsername = OperationContext.Current.ServiceSecurityContext.PrimaryIdentity.Name;
+				if (!string.IsNullOrWhiteSpace(jwtInUsername))
+				{
+					var token = new JwtSecurityToken(jwtInUsername);
+					return token.Claims.FirstOrDefault(c => c.Type == "unique_name")?.Value;
+				}
+				else if (!string.IsNullOrWhiteSpace(Username))
+				{
+					return Username;
+				}
+				else
+				{
+					return null;
+				}
+			}
+			set
+			{
+				Username = value;
+			}
+		}
+	}
+
+
+
+
+
+	public class SamlJwtValidator : Saml2SecurityTokenHandler
+	{
+		public override ReadOnlyCollection<ClaimsIdentity> ValidateToken(SecurityToken token)
+		{
+			var saml = token as Saml2SecurityToken;
+			var samlAttributeStatement = saml.Assertion.Statements.OfType<Saml2AttributeStatement>().FirstOrDefault();
+			var jwt = samlAttributeStatement.Attributes.Where(sa => sa.Name.Equals("jwt", StringComparison.OrdinalIgnoreCase)).SingleOrDefault().Values.Single();
+
+			var principal = Jwt.Validate(jwt);
+
+			return new ReadOnlyCollection<ClaimsIdentity>(new List<ClaimsIdentity> { principal.Identities.First() });
+		}
+	}
+		
+	public class CustomUsernameJwtValidator : UserNamePasswordValidator
+	{
+		public override void Validate(string userName, string password)
+		{
+			Jwt.Validate(userName);
+		}
+	}
+
+
+
+	
+
+
+
+
+	public class RequireAuthenticationAuthorization : ClaimsAuthorizationManager
+	{
+		public override bool CheckAccess(AuthorizationContext context)
+		{
+			return context.Principal.Identity.IsAuthenticated;
 		}
 	}
 }

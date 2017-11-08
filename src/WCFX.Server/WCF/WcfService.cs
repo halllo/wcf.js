@@ -2,81 +2,101 @@ using System;
 using System.IdentityModel.Configuration;
 using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
-using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
+using System.ServiceModel.Security;
 
 namespace WCFX.Server.WCF
 {
 	public class WcfService
 	{
-		private WcfService()
+		public WcfService(string urlInfix) => this.urlInfix = urlInfix;
+
+		public void HostNetTcp<TService, TContract>(string serverAddress, int port, long maxReceivedMessageSize)
 		{
+			var serviceHost = new ServiceHost(typeof(TService));
+			serviceHost.Credentials.ServiceCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.Root, X509FindType.FindBySubjectName, serverAddress);
+			serviceHost.Credentials.UserNameAuthentication.UserNamePasswordValidationMode = UserNamePasswordValidationMode.Custom;
+			serviceHost.Credentials.UserNameAuthentication.CustomUserNamePasswordValidator = new CustomUsernameJwtValidator();
+
+			var serviceEndpoint = serviceHost.AddServiceEndpoint(typeof(TContract), 
+				binding: NetTcpBinding(maxReceivedMessageSize), 
+				address: $"net.tcp://{serverAddress}:{port}/{urlInfix}/{typeof(TContract).FullName}");
+			
+			SetStuff(serviceHost, serviceEndpoint);
+			serviceHost.Open();
 		}
 
-		public static WcfService Host<TService>(string serverCertSubjectName)
+		public void HostWS2007FederationHttp<TService, TContract>(string serverAddress, int port, long maxReceivedMessageSize)
 		{
 			var identityConfig = new IdentityConfiguration();
 			identityConfig.SecurityTokenHandlers.Clear();
-			identityConfig.SecurityTokenHandlers.Add(new JwtValidator());
+			identityConfig.SecurityTokenHandlers.Add(new SamlJwtValidator());
 			identityConfig.ClaimsAuthorizationManager = new RequireAuthenticationAuthorization();
 
 			var serviceHost = new ServiceHost(typeof(TService));
+			serviceHost.Credentials.ServiceCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.Root, X509FindType.FindBySubjectName, serverAddress);
 			serviceHost.Credentials.IdentityConfiguration = identityConfig;
 			serviceHost.Credentials.UseIdentityConfiguration = true;
-			serviceHost.Credentials.ServiceCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.Root, X509FindType.FindBySubjectName, serverCertSubjectName);
+			
+			var serviceEndpoint = serviceHost.AddServiceEndpoint(typeof(TContract), 
+				binding: WS2007FederationHttpBinding(maxReceivedMessageSize), 
+				address: $"https://{serverAddress}:{port}/{urlInfix}/{typeof(TContract).FullName}");
 
-			var authz = serviceHost.Description.Behaviors.Find<ServiceAuthorizationBehavior>();
-			authz.PrincipalPermissionMode = PrincipalPermissionMode.Always;
-
-			return new WcfService { mServiceHost = serviceHost };
+			SetStuff(serviceHost, serviceEndpoint);
+			serviceHost.Open();
 		}
 
-		public ServiceHost Start()
+		private void SetStuff(ServiceHost serviceHost, ServiceEndpoint serviceEndpoint)
 		{
-			SetMaxItemsInObjectGraph(int.MaxValue);
-			EnableExceptionDetailsInFaults(true);
-
-			mServiceHost.Open();
-
-			return mServiceHost;
-		}
-
-		public ServiceEndpoint AddEndpoint<TContract>(string address, Binding binding)
-		{
-			var serviceEndpoint = mServiceHost.AddServiceEndpoint(typeof(TContract), binding, address);
 			serviceEndpoint.Binding.OpenTimeout = mTimeoutDuration;
 			serviceEndpoint.Binding.CloseTimeout = mTimeoutDuration;
 			serviceEndpoint.Binding.ReceiveTimeout = mTimeoutDuration;
 			serviceEndpoint.Binding.SendTimeout = mTimeoutDuration;
 
-			return serviceEndpoint;
+			GetBehavior<ServiceAuthorizationBehavior>(serviceHost).PrincipalPermissionMode = PrincipalPermissionMode.Always;
+			GetBehavior<ServiceBehaviorAttribute>(serviceHost).MaxItemsInObjectGraph = int.MaxValue;
+			GetBehavior<ServiceDebugBehavior>(serviceHost).IncludeExceptionDetailInFaults = true;
 		}
 
-		private void SetMaxItemsInObjectGraph(int size)
+		private T GetBehavior<T>(ServiceHost serviceHost) where T : class, IServiceBehavior, new()
 		{
-			var sba = GetBehavior<ServiceBehaviorAttribute>();
-			sba.MaxItemsInObjectGraph = size;
-		}
-
-		private void EnableExceptionDetailsInFaults(bool isEnabled)
-		{
-			var sdb = GetBehavior<ServiceDebugBehavior>();
-			sdb.IncludeExceptionDetailInFaults = isEnabled;
-		}
-
-		private T GetBehavior<T>() where T : class, IServiceBehavior, new()
-		{
-			var smb = mServiceHost.Description.Behaviors.Find<T>();
+			var smb = serviceHost.Description.Behaviors.Find<T>();
 			if (smb == null)
 			{
 				smb = new T();
-				mServiceHost.Description.Behaviors.Add(smb);
+				serviceHost.Description.Behaviors.Add(smb);
 			}
 
 			return smb;
 		}
 
-		private ServiceHost mServiceHost;
+		private static NetTcpBinding NetTcpBinding(long maxReceivedMessageSize)
+		{
+			var binding = new NetTcpBinding();
+			binding.MaxReceivedMessageSize = maxReceivedMessageSize;
+			binding.MaxBufferSize = (int)Math.Min(Int32.MaxValue, maxReceivedMessageSize);
+			binding.ReaderQuotas.MaxStringContentLength = int.MaxValue;
+			binding.Security.Mode = SecurityMode.TransportWithMessageCredential;
+			binding.Security.Message.ClientCredentialType = MessageCredentialType.UserName;
+
+			return binding;
+		}
+
+		private static WS2007FederationHttpBinding WS2007FederationHttpBinding(long maxReceivedMessageSize)
+		{
+			var binding = new WS2007FederationHttpBinding();
+			binding.MaxReceivedMessageSize = maxReceivedMessageSize;
+			binding.ReaderQuotas.MaxStringContentLength = int.MaxValue;
+			binding.HostNameComparisonMode = HostNameComparisonMode.Exact;
+			binding.Security.Mode = WSFederationHttpSecurityMode.TransportWithMessageCredential;
+			binding.Security.Message.EstablishSecurityContext = false;
+			binding.Security.Message.IssuedKeyType = System.IdentityModel.Tokens.SecurityKeyType.BearerKey;
+
+			return binding;
+		}
+
 		private readonly TimeSpan mTimeoutDuration = TimeSpan.FromMinutes(5);
+		private readonly string urlInfix;
 	}
+	
 }
