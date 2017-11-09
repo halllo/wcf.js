@@ -1,5 +1,5 @@
-﻿#define NETTCP
-//#define WS2007HTTP
+﻿//#define NETTCP
+#define WS2007HTTP
 
 using System;
 using System.Collections.Generic;
@@ -12,9 +12,9 @@ namespace WCFX.DesktopClient
 {
 	public class WcfClient
 	{
-		public TResult Execute<TService, TResult>(string token, Func<TService, TResult> func, int operationTimeout = 90) where TService : class, IWcfService
+		public TResult Execute<TService, TResult>(Func<TService, TResult> func, int operationTimeout = 90) where TService : class, IWcfService
 		{
-			var service = CreateService<TService>(token,  operationTimeout);
+			var service = CreateService<TService>(operationTimeout);
 			try
 			{
 				var result = func(service);
@@ -26,9 +26,9 @@ namespace WCFX.DesktopClient
 			}
 		}
 
-		public void Execute<TService>(string token, Action<TService> action, int operationTimeout = 90) where TService : class, IWcfService
+		public void Execute<TService>(Action<TService> action, int operationTimeout = 90) where TService : class, IWcfService
 		{
-			var service = CreateService<TService>(token, operationTimeout);
+			var service = CreateService<TService>(operationTimeout);
 			try
 			{
 				action(service);
@@ -63,16 +63,19 @@ namespace WCFX.DesktopClient
 
 
 
-		
-		private TService CreateService<TService>(string token, int operationTimeout = 90) where TService : class, IWcfService
+		public string Token = null;
+
+		private TService CreateService<TService>(int operationTimeout = 90) where TService : class, IWcfService
 		{
+			if (string.IsNullOrWhiteSpace(Token)) throw new ArgumentNullException(nameof(Token));
+
 #if NETTCP
-			var channelFactory = GetChannelFactory<TService>(token);
+			var channelFactory = GetChannelFactory<TService>(Token);
 			var service = channelFactory.CreateChannel();
 #endif
 #if WS2007HTTP
 			var channelFactory = GetChannelFactory<TService>();
-			var service = channelFactory.CreateChannelWithIssuedToken(TokenStuff.WrapJwt(token));
+			var service = channelFactory.CreateChannelWithIssuedToken(TokenStuff.WrapJwt(Token));
 #endif
 			{//SetMaxItemsInObjectGraph
 				foreach (var operation in channelFactory.Endpoint.Contract.Operations)

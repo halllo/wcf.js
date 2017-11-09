@@ -56,6 +56,8 @@ namespace WCFX.Server.WCF
 			GetBehavior<ServiceAuthorizationBehavior>(serviceHost).PrincipalPermissionMode = PrincipalPermissionMode.Always;
 			GetBehavior<ServiceBehaviorAttribute>(serviceHost).MaxItemsInObjectGraph = int.MaxValue;
 			GetBehavior<ServiceDebugBehavior>(serviceHost).IncludeExceptionDetailInFaults = true;
+
+			serviceEndpoint.EndpointBehaviors.Add(new SoapLoggerBehavior());
 		}
 
 		private T GetBehavior<T>(ServiceHost serviceHost) where T : class, IServiceBehavior, new()

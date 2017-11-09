@@ -92,6 +92,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WCF\Jwt.cs" />
+    <Compile Include="WCF\SoapLogger.cs" />
     <Compile Include="Web\Startup.cs" />
     <Compile Include="WCF\ExceptionHandledOperationAttribute.cs" />
     <Compile Include="WCF\WcfService.cs" />

@@ -19,7 +19,7 @@ namespace WCFX.Server.WCF
 		static string _issuer = string.Empty;
 		static List<SecurityToken> _signingTokens = null;
 		static DateTime _stsMetadataRetrievalTime = DateTime.MinValue;
-		
+
 		public static ClaimsPrincipal Validate(string jwt)
 		{
 			try
@@ -35,7 +35,7 @@ namespace WCFX.Server.WCF
 
 					_stsMetadataRetrievalTime = DateTime.UtcNow;
 				}
-				
+
 				var claimsPrincipal = new JwtSecurityTokenHandler().ValidateToken(jwt, new TokenValidationParameters
 				{
 					ValidAudience = _audience,
@@ -49,41 +49,11 @@ namespace WCFX.Server.WCF
 					throw new SecurityTokenValidationException("Insufficient Scope");
 				}
 
-				Username = claimsPrincipal.Identity.Name;
-
 				return claimsPrincipal;
 			}
 			catch (Exception)
 			{
 				throw;
-			}
-		}
-
-
-		[ThreadStatic]
-		private static string Username = null;
-		public static string CurrentUser
-		{
-			get
-			{
-				var jwtInUsername = OperationContext.Current.ServiceSecurityContext.PrimaryIdentity.Name;
-				if (!string.IsNullOrWhiteSpace(jwtInUsername))
-				{
-					var token = new JwtSecurityToken(jwtInUsername);
-					return token.Claims.FirstOrDefault(c => c.Type == "unique_name")?.Value;
-				}
-				else if (!string.IsNullOrWhiteSpace(Username))
-				{
-					return Username;
-				}
-				else
-				{
-					return null;
-				}
-			}
-			set
-			{
-				Username = value;
 			}
 		}
 	}
@@ -94,6 +64,9 @@ namespace WCFX.Server.WCF
 
 	public class SamlJwtValidator : Saml2SecurityTokenHandler
 	{
+		[ThreadStatic]
+		public static string Username = null;
+
 		public override ReadOnlyCollection<ClaimsIdentity> ValidateToken(SecurityToken token)
 		{
 			var saml = token as Saml2SecurityToken;
@@ -101,11 +74,12 @@ namespace WCFX.Server.WCF
 			var jwt = samlAttributeStatement.Attributes.Where(sa => sa.Name.Equals("jwt", StringComparison.OrdinalIgnoreCase)).SingleOrDefault().Values.Single();
 
 			var principal = Jwt.Validate(jwt);
+			Username = principal.Identity.Name;
 
 			return new ReadOnlyCollection<ClaimsIdentity>(new List<ClaimsIdentity> { principal.Identities.First() });
 		}
 	}
-		
+
 	public class CustomUsernameJwtValidator : UserNamePasswordValidator
 	{
 		public override void Validate(string userName, string password)
@@ -116,7 +90,37 @@ namespace WCFX.Server.WCF
 
 
 
-	
+
+
+
+	public static class JwtCurrentUsername
+	{
+		public static string FromToken
+		{
+			get
+			{
+				var jwtInUsername = OperationContext.Current.ServiceSecurityContext.PrimaryIdentity.Name;
+				if (!string.IsNullOrWhiteSpace(jwtInUsername))
+				{
+					var token = new JwtSecurityToken(jwtInUsername);
+					return token.Claims.FirstOrDefault(c => c.Type == "unique_name")?.Value;
+				}
+				else if (!string.IsNullOrWhiteSpace(SamlJwtValidator.Username))
+				{
+					return SamlJwtValidator.Username;
+				}
+				else
+				{
+					return null;
+				}
+			}
+			set
+			{
+				SamlJwtValidator.Username = value;
+			}
+		}
+	}
+
 
 
 

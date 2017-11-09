@@ -20,7 +20,14 @@
 		<Grid Grid.Row="0" Grid.Column="0" Margin="10" >
 			<Button Content="Sign in" Command="{ctx:CommandBinding 'SignIn(this)'}" Margin="10" />
 		</Grid>
-		<TextBox Grid.Row="1" Grid.Column="0" Text="{Binding AccessToken,Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"/>
+		<TabControl Grid.Row="1" Grid.Column="0" TabStripPlacement="Left">
+			<TabItem Header="JWT">
+				<TextBox Text="{Binding JwtToken,Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"/>
+			</TabItem>
+			<TabItem Header="SAML">
+				<TextBox Text="{Binding SamlJwtToken,Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"/>
+			</TabItem>
+		</TabControl>
 		
 		<Grid Grid.Row="0" Grid.Column="1" Margin="10" >
 			<Grid.ColumnDefinitions>

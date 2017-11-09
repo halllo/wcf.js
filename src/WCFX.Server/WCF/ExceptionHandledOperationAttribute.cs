@@ -118,14 +118,14 @@ namespace WCFX.Server.WCF
 
 		public override object Invoke(object instance, object[] inputs, out object[] outputs)
 		{
-			var username = Jwt.CurrentUser;
+			var username = JwtCurrentUsername.FromToken;
 			if (string.IsNullOrWhiteSpace(username)) throw new Exception("Es konnte kein Benutzername-Message-Header gefunden werden.");
 
-			Program.Log($"Request von {username}", ConsoleColor.Cyan);
+			Program.Log($"Request von '{username}' at {DateTime.Now}", ConsoleColor.Cyan);
 
 			var result = DecoratedOperationInvoker.Invoke(instance, inputs, out outputs);
 
-			Jwt.CurrentUser = null;
+			JwtCurrentUsername.FromToken = null;
 			return result;
 		}
 	}

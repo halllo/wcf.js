@@ -24,7 +24,8 @@ namespace WCFX.DesktopClient
 	{
 		public bool RunWithFullAccessRights { get; set; }
 		public List<DossierDto> Akten { get; set; }
-		public string AccessToken { get; private set; }
+		public string JwtToken => App.ServiceProvider.Token;
+		public string SamlJwtToken => TokenStuff.WrapJwt(App.ServiceProvider.Token ?? string.Empty).ToTokenXmlString();
 
 		static string _tenant = ConfigurationManager.AppSettings["ida:Tenant"];
 		static string _clientId = ConfigurationManager.AppSettings["ida:ClientId"];
@@ -33,12 +34,12 @@ namespace WCFX.DesktopClient
 		AuthenticationContext authContext = new AuthenticationContext($"https://login.microsoftonline.com/{_tenant}");
 		
 
-		public bool CanAktenLaden() => !string.IsNullOrWhiteSpace(AccessToken);
+		public bool CanAktenLaden() => !string.IsNullOrWhiteSpace(App.ServiceProvider.Token);
 		public void AktenLaden()
 		{
 			try
 			{
-				Akten = App.ServiceProvider.Execute<IDossierService, List<DossierDto>>(AccessToken, s => s.GetAll(RunWithFullAccessRights));
+				Akten = App.ServiceProvider.Execute<IDossierService, List<DossierDto>>(s => s.GetAll(RunWithFullAccessRights));
 				OnPropertyChanged(nameof(Akten));
 			}
 			catch (Exception e)
@@ -53,9 +54,11 @@ namespace WCFX.DesktopClient
 			{
 				var result = await authContext.AcquireTokenAsync(_audience, _clientId, _redirectUri, new PlatformParameters(PromptBehavior.Auto));
 				button.Content = $"Hallo {result.UserInfo.GivenName}";
-				AccessToken = result.AccessToken;
-				OnPropertyChanged(nameof(AccessToken));
 				button.IsEnabled = false;
+
+				App.ServiceProvider.Token = result.AccessToken;
+				OnPropertyChanged(nameof(JwtToken));
+				OnPropertyChanged(nameof(SamlJwtToken));
 			}
 			catch (AdalException ex)
 			{
