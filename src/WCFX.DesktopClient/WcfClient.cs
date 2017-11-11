@@ -1,5 +1,5 @@
-﻿//#define NETTCP
-#define WS2007HTTP
+﻿#define NETTCP
+//#define WS2007HTTP
 
 using System;
 using System.Collections.Generic;
