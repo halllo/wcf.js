@@ -51,8 +51,9 @@ namespace WCFX.Server.WCF
 
 				return claimsPrincipal;
 			}
-			catch (Exception)
+			catch (Exception e)
 			{
+				Program.Log("JWT validation failure: " + e.Message, ConsoleColor.Red);
 				throw;
 			}
 		}

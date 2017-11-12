@@ -128,6 +128,7 @@ namespace WCFX.DesktopClient
 				channelFactory.Credentials.SupportInteractive = false;
 				channelFactory.Credentials.UserName.UserName = token;
 				channelFactory.Credentials.UserName.Password = "jwt";
+				channelFactory.Credentials.ServiceCertificate.Authentication.CertificateValidationMode = System.ServiceModel.Security.X509CertificateValidationMode.None;//beacause of self signed cert, not a good idea for production
 #endif
 #if WS2007HTTP
 				var channelFactory = new ChannelFactory<T>(WS2007FederationHttpBinding(maxReceivedMessageSize), $"https://{serverAddress}:{serverPort+1}/WCFX/{typeof(T).FullName}");
