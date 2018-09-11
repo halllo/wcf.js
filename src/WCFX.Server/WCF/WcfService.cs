@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.IdentityModel.Configuration;
 using System.Security.Cryptography.X509Certificates;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 using System.ServiceModel.Security;
 
-namespace WCFX.Server.WCF
+namespace WCFX.Server.wcf
 {
 	public class WcfService
 	{
@@ -100,5 +100,4 @@ namespace WCFX.Server.WCF
 		private readonly TimeSpan mTimeoutDuration = TimeSpan.FromMinutes(5);
 		private readonly string urlInfix;
 	}
-
 }

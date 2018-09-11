@@ -1,11 +1,9 @@
 ﻿using System;
-using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
-using System.Threading;
 
-namespace WCFX.Server.WCF
+namespace WCFX.Server.wcf
 {
 	public class ExceptionHandledOperationAttribute : Attribute, IOperationBehavior
 	{
@@ -23,14 +21,12 @@ namespace WCFX.Server.WCF
 			dispatchOperation.Invoker = invoker;
 		}
 
-		public void ApplyClientBehavior(OperationDescription operationDescription,
-			ClientOperation clientOperation)
+		public void ApplyClientBehavior(OperationDescription operationDescription, ClientOperation clientOperation)
 		{
 			throw new NotSupportedException();
 		}
 
-		public void AddBindingParameters(OperationDescription operationDescription,
-			BindingParameterCollection bindingParameters)
+		public void AddBindingParameters(OperationDescription operationDescription, BindingParameterCollection bindingParameters)
 		{
 		}
 	}
@@ -121,7 +117,7 @@ namespace WCFX.Server.WCF
 			var username = JwtCurrentUsername.FromToken;
 			if (string.IsNullOrWhiteSpace(username)) throw new Exception("Es konnte kein Benutzername-Message-Header gefunden werden.");
 
-			Program.Log($"Request von '{username}' at {DateTime.Now}", ConsoleColor.Cyan);
+			Logger.Log($"Request von '{username}' at {DateTime.Now}", ConsoleColor.Cyan);
 
 			var result = DecoratedOperationInvoker.Invoke(instance, inputs, out outputs);
 
@@ -162,7 +158,7 @@ namespace WCFX.Server.WCF
 			}
 			catch (Exception ex)
 			{
-				Program.Log(ex.Message, ConsoleColor.Red);
+				Logger.Log(ex.Message, ConsoleColor.Red);
 				throw;
 			}
 		}

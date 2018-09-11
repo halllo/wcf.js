@@ -6,45 +6,45 @@
         xmlns:ctx="clr-namespace:CommandContext;assembly=CommandContext"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="625">
-	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition/>
-			<RowDefinition Height="Auto"/>
-		</Grid.RowDefinitions>
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="1*"/>
-			<ColumnDefinition Width="2*"/>
-		</Grid.ColumnDefinitions>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
 
-		<Grid Grid.Row="0" Grid.Column="0" Margin="10" >
-			<Button Content="Sign in" Command="{ctx:CommandBinding 'SignIn(this)'}" Margin="10" />
-		</Grid>
-		<TabControl Grid.Row="1" Grid.Column="0" TabStripPlacement="Left">
-			<TabItem Header="JWT">
-				<TextBox Text="{Binding JwtToken,Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"/>
-			</TabItem>
-			<TabItem Header="SAML">
-				<TextBox Text="{Binding SamlJwtToken,Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"/>
-			</TabItem>
-		</TabControl>
-		
-		<Grid Grid.Row="0" Grid.Column="1" Margin="10" >
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition/>
-				<ColumnDefinition/>
-			</Grid.ColumnDefinitions>
-			<Button Grid.Column="0" Content="Akten Laden" Command="{ctx:CommandBinding 'AktenLaden()'}" Margin="10" />
-			<CheckBox Grid.Column="1" Content="RunWithFullAccessRights" IsChecked="{Binding RunWithFullAccessRights}" Margin="10" VerticalAlignment="Center" />
-		</Grid>
-		<ListBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Akten}">
-			<ListBox.ItemTemplate>
-				<DataTemplate>
-					<TextBlock Text="{Binding ReferenceNumber}"></TextBlock>
-				</DataTemplate>
-			</ListBox.ItemTemplate>
-		</ListBox>
+        <Grid Grid.Row="0" Grid.Column="0" Margin="10" >
+            <Button Content="Sign in" Command="{ctx:CommandBinding 'SignIn(this)'}" Margin="10" />
+        </Grid>
+        <TabControl Grid.Row="1" Grid.Column="0" TabStripPlacement="Left">
+            <TabItem Header="JWT">
+                <TextBox Text="{Binding JwtToken,Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"/>
+            </TabItem>
+            <TabItem Header="SAML">
+                <TextBox Text="{Binding SamlJwtToken,Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"/>
+            </TabItem>
+        </TabControl>
 
-		<TextBlock Grid.Row="2" Text="{Binding Akten.Count,StringFormat={}{0} Akten geladen}" Margin="10"></TextBlock>
-	</Grid>
+        <Grid Grid.Row="0" Grid.Column="1" Margin="10" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="Akten Laden" Command="{ctx:CommandBinding 'AktenLaden()'}" Margin="10" />
+            <CheckBox Grid.Column="1" Content="RunWithFullAccessRights" IsChecked="{Binding RunWithFullAccessRights}" Margin="10" VerticalAlignment="Center" />
+        </Grid>
+        <ListBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Akten}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding ReferenceNumber}"></TextBlock>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <TextBlock Grid.Row="2" Text="{Binding Akten.Count,StringFormat={}{0} Akten geladen}" Margin="10"></TextBlock>
+    </Grid>
 </Window>

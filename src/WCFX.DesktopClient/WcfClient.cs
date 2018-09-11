@@ -1,5 +1,5 @@
-﻿#define NETTCP
-//#define WS2007HTTP
+﻿//#define NETTCP
+#define WS2007HTTP
 
 using System;
 using System.Collections.Generic;
@@ -131,7 +131,7 @@ namespace WCFX.DesktopClient
 				channelFactory.Credentials.ServiceCertificate.Authentication.CertificateValidationMode = System.ServiceModel.Security.X509CertificateValidationMode.None;//beacause of self signed cert, not a good idea for production
 #endif
 #if WS2007HTTP
-				var channelFactory = new ChannelFactory<T>(WS2007FederationHttpBinding(maxReceivedMessageSize), $"https://{serverAddress}:{serverPort+1}/WCFX/{typeof(T).FullName}");
+				var channelFactory = new ChannelFactory<T>(WS2007FederationHttpBinding(maxReceivedMessageSize), $"https://{serverAddress}:{serverPort + 1}/WCFX/{typeof(T).FullName}");
 #endif
 				channelFactoryCache.Add(typeof(T), channelFactory);
 			}

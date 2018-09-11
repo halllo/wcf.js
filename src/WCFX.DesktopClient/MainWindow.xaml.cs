@@ -32,7 +32,7 @@ namespace WCFX.DesktopClient
 		static string _audience = ConfigurationManager.AppSettings["ida:Audience"];
 		static Uri _redirectUri = new Uri(ConfigurationManager.AppSettings["ida:RedirectUri"]);
 		AuthenticationContext authContext = new AuthenticationContext($"https://login.microsoftonline.com/{_tenant}");
-		
+
 
 		public bool CanAktenLaden() => !string.IsNullOrWhiteSpace(App.ServiceProvider.Token);
 		public void AktenLaden()

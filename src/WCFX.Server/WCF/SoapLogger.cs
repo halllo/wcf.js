@@ -4,7 +4,7 @@ using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
 
-namespace WCFX.Server.WCF
+namespace WCFX.Server.wcf
 {
 	public class SoapLoggerMessageInspector : IDispatchMessageInspector
 	{
@@ -18,7 +18,7 @@ namespace WCFX.Server.WCF
 			var bodyData = xrdr.ReadOuterXml();
 			var soap = strMessage.Replace("... stream ...", bodyData);
 
-			Program.Log("Received:\n" + soap, color: ConsoleColor.DarkGray);
+			Logger.Log("Received:\n" + soap, color: ConsoleColor.DarkGray);
 
 			return null;
 		}
@@ -29,14 +29,14 @@ namespace WCFX.Server.WCF
 			reply = buffer.CreateMessage();
 			var soap = buffer.CreateMessage().ToString();
 
-			Program.Log("Sending:\n" + soap + "\n", color: ConsoleColor.DarkGray);
+			Logger.Log("Sending:\n" + soap + "\n", color: ConsoleColor.DarkGray);
 		}
 	}
 
 
 
 
-	
+
 
 
 	public class SoapLoggerBehavior : IEndpointBehavior

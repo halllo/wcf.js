@@ -63,7 +63,7 @@ namespace WCFX.DesktopClient
 		{
 			return token.TokenXml.OuterXml;
 		}
-		
+
 		/// <summary>
 		/// Converts a supported token to an XML string.
 		/// </summary>
