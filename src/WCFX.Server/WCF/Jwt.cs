@@ -1,5 +1,4 @@
-﻿using Microsoft.IdentityModel.Protocols;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
@@ -8,6 +7,7 @@ using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Claims;
 using System.ServiceModel;
+using Microsoft.IdentityModel.Protocols;
 
 namespace WCFX.Server.WCF
 {
@@ -44,7 +44,7 @@ namespace WCFX.Server.WCF
 					CertificateValidator = X509CertificateValidator.None
 				}, out SecurityToken validatedToken);
 
-				if (!claimsPrincipal.HasClaim("http://schemas.microsoft.com/identity/claims/scope", "User.Read"))
+				if (!claimsPrincipal.HasClaim("http://schemas.microsoft.com/identity/claims/scope", "user_impersonation"))
 				{
 					throw new SecurityTokenValidationException("Insufficient Scope");
 				}

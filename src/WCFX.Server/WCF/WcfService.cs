@@ -14,14 +14,14 @@ namespace WCFX.Server.WCF
 		public void HostNetTcp<TService, TContract>(string serverAddress, int port, long maxReceivedMessageSize)
 		{
 			var serviceHost = new ServiceHost(typeof(TService));
-			serviceHost.Credentials.ServiceCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.Root, X509FindType.FindBySubjectName, serverAddress);
+			serviceHost.Credentials.ServiceCertificate.SetCertificate(StoreLocation.CurrentUser, StoreName.Root, X509FindType.FindByThumbprint, "33765733cf5e9e952df3302a610bd3e566b13507");
 			serviceHost.Credentials.UserNameAuthentication.UserNamePasswordValidationMode = UserNamePasswordValidationMode.Custom;
 			serviceHost.Credentials.UserNameAuthentication.CustomUserNamePasswordValidator = new CustomUsernameJwtValidator();
 
-			var serviceEndpoint = serviceHost.AddServiceEndpoint(typeof(TContract), 
-				binding: NetTcpBinding(maxReceivedMessageSize), 
+			var serviceEndpoint = serviceHost.AddServiceEndpoint(typeof(TContract),
+				binding: NetTcpBinding(maxReceivedMessageSize),
 				address: $"net.tcp://{serverAddress}:{port}/{urlInfix}/{typeof(TContract).FullName}");
-			
+
 			SetStuff(serviceHost, serviceEndpoint);
 			serviceHost.Open();
 		}
@@ -34,12 +34,12 @@ namespace WCFX.Server.WCF
 			identityConfig.ClaimsAuthorizationManager = new RequireAuthenticationAuthorization();
 
 			var serviceHost = new ServiceHost(typeof(TService));
-			serviceHost.Credentials.ServiceCertificate.SetCertificate(StoreLocation.LocalMachine, StoreName.Root, X509FindType.FindBySubjectName, serverAddress);
+			serviceHost.Credentials.ServiceCertificate.SetCertificate(StoreLocation.CurrentUser, StoreName.Root, X509FindType.FindByThumbprint, "33765733cf5e9e952df3302a610bd3e566b13507");
 			serviceHost.Credentials.IdentityConfiguration = identityConfig;
 			serviceHost.Credentials.UseIdentityConfiguration = true;
-			
-			var serviceEndpoint = serviceHost.AddServiceEndpoint(typeof(TContract), 
-				binding: WS2007FederationHttpBinding(maxReceivedMessageSize), 
+
+			var serviceEndpoint = serviceHost.AddServiceEndpoint(typeof(TContract),
+				binding: WS2007FederationHttpBinding(maxReceivedMessageSize),
 				address: $"https://{serverAddress}:{port}/{urlInfix}/{typeof(TContract).FullName}");
 
 			SetStuff(serviceHost, serviceEndpoint);
@@ -100,5 +100,5 @@ namespace WCFX.Server.WCF
 		private readonly TimeSpan mTimeoutDuration = TimeSpan.FromMinutes(5);
 		private readonly string urlInfix;
 	}
-	
+
 }
