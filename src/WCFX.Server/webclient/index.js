@@ -57,7 +57,7 @@
 			request.open('POST', url, true);
 			request.setRequestHeader("Content-type", "application/soap+xml; charset=utf-8");
 			request.onreadystatechange = function () {
-				if (request.readyState == 4 && request.status == 200) {
+				if (request.readyState === 4 && request.status === 200) {
 					
 					var matches = request.responseText.match(/<b:ReferenceNumber>(.*?)<\/b:ReferenceNumber>/g).map(function(value) {
 						return value.replace("<b:ReferenceNumber>", "").replace("<\/b:ReferenceNumber>", "");

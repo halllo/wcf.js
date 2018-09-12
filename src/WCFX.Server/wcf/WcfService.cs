@@ -9,44 +9,48 @@ namespace WCFX.Server.wcf
 {
 	public class WcfService
 	{
+		//static ServiceHostFactory _ServiceHostFactory = new WebServiceHostFactory();
+
 		public WcfService(string urlInfix) => this.urlInfix = urlInfix;
 
-		public void HostNetTcp<TService, TContract>(string serverAddress, int port, long maxReceivedMessageSize)
+		public void HostNetTcp<TService, TContract>(string serverAddress, int port, long maxReceivedMessageSize, string certThumbprint)
 		{
-			var serviceHost = new ServiceHost(typeof(TService));
-			serviceHost.Credentials.ServiceCertificate.SetCertificate(StoreLocation.CurrentUser, StoreName.Root, X509FindType.FindByThumbprint, "33765733cf5e9e952df3302a610bd3e566b13507");
+			//var serviceHost = _ServiceHostFactory.CreateServiceHost(typeof(TService).FullName, new[] { new Uri($"net.tcp://{serverAddress}:{port}/{urlInfix}") });
+			var serviceHost = new ServiceHost(typeof(TService), new[] { new Uri($"net.tcp://{serverAddress}:{port}") });
+			serviceHost.Credentials.ServiceCertificate.SetCertificate(StoreLocation.CurrentUser, StoreName.My, X509FindType.FindByThumbprint, certThumbprint);
 			serviceHost.Credentials.UserNameAuthentication.UserNamePasswordValidationMode = UserNamePasswordValidationMode.Custom;
 			serviceHost.Credentials.UserNameAuthentication.CustomUserNamePasswordValidator = new CustomUsernameJwtValidator();
 
-			var serviceEndpoint = serviceHost.AddServiceEndpoint(typeof(TContract),
+			var serviceEndpoint = serviceHost.AddServiceEndpoint(typeof(TContract).FullName,
 				binding: NetTcpBinding(maxReceivedMessageSize),
-				address: $"net.tcp://{serverAddress}:{port}/{urlInfix}/{typeof(TContract).FullName}");
+				address: $"/{typeof(TContract).FullName}");
 
 			SetStuff(serviceHost, serviceEndpoint);
 			serviceHost.Open();
 		}
 
-		public void HostWS2007FederationHttp<TService, TContract>(string serverAddress, int port, long maxReceivedMessageSize)
+		public void HostWS2007FederationHttp<TService, TContract>(string serverAddress, int port, long maxReceivedMessageSize, string certThumbprint)
 		{
 			var identityConfig = new IdentityConfiguration();
 			identityConfig.SecurityTokenHandlers.Clear();
 			identityConfig.SecurityTokenHandlers.Add(new SamlJwtValidator());
 			identityConfig.ClaimsAuthorizationManager = new RequireAuthenticationAuthorization();
 
-			var serviceHost = new ServiceHost(typeof(TService));
-			serviceHost.Credentials.ServiceCertificate.SetCertificate(StoreLocation.CurrentUser, StoreName.Root, X509FindType.FindByThumbprint, "33765733cf5e9e952df3302a610bd3e566b13507");
+			//var serviceHost = _ServiceHostFactory.CreateServiceHost(typeof(TService).FullName, new[] { new Uri($"https://{serverAddress}:{port}") });
+			var serviceHost = new ServiceHost(typeof(TService), new[] { new Uri($"https://{serverAddress}:{port}") });
+			serviceHost.Credentials.ServiceCertificate.SetCertificate(StoreLocation.CurrentUser, StoreName.My, X509FindType.FindByThumbprint, certThumbprint);
 			serviceHost.Credentials.IdentityConfiguration = identityConfig;
 			serviceHost.Credentials.UseIdentityConfiguration = true;
 
-			var serviceEndpoint = serviceHost.AddServiceEndpoint(typeof(TContract),
+			var serviceEndpoint = serviceHost.AddServiceEndpoint(typeof(TContract).FullName,
 				binding: WS2007FederationHttpBinding(maxReceivedMessageSize),
-				address: $"https://{serverAddress}:{port}/{urlInfix}/{typeof(TContract).FullName}");
+				address: $"/{urlInfix}/{typeof(TContract).FullName}");
 
 			SetStuff(serviceHost, serviceEndpoint);
 			serviceHost.Open();
 		}
 
-		private void SetStuff(ServiceHost serviceHost, ServiceEndpoint serviceEndpoint)
+		private void SetStuff(ServiceHostBase serviceHost, ServiceEndpoint serviceEndpoint)
 		{
 			serviceEndpoint.Binding.OpenTimeout = mTimeoutDuration;
 			serviceEndpoint.Binding.CloseTimeout = mTimeoutDuration;
@@ -60,7 +64,7 @@ namespace WCFX.Server.wcf
 			serviceEndpoint.EndpointBehaviors.Add(new SoapLoggerBehavior());
 		}
 
-		private T GetBehavior<T>(ServiceHost serviceHost) where T : class, IServiceBehavior, new()
+		private T GetBehavior<T>(ServiceHostBase serviceHost) where T : class, IServiceBehavior, new()
 		{
 			var smb = serviceHost.Description.Behaviors.Find<T>();
 			if (smb == null)

@@ -117,7 +117,7 @@ namespace WCFX.Server.wcf
 			var username = JwtCurrentUsername.FromToken;
 			if (string.IsNullOrWhiteSpace(username)) throw new Exception("Es konnte kein Benutzername-Message-Header gefunden werden.");
 
-			Logger.Log($"Request von '{username}' at {DateTime.Now}", ConsoleColor.Cyan);
+			Log.Emphasized($"Request von '{username}' at {DateTime.Now}");
 
 			var result = DecoratedOperationInvoker.Invoke(instance, inputs, out outputs);
 
@@ -158,7 +158,7 @@ namespace WCFX.Server.wcf
 			}
 			catch (Exception ex)
 			{
-				Logger.Log(ex.Message, ConsoleColor.Red);
+				Log.Error(ex.Message);
 				throw;
 			}
 		}

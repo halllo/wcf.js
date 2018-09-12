@@ -10,7 +10,6 @@ namespace WCFX.Server
 		public void Configuration(IAppBuilder app)
 		{
 			app.UseMyWcfServices();
-			app.UseMyStaticFiles();
 		}
 	}
 }

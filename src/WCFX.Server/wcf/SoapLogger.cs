@@ -18,7 +18,7 @@ namespace WCFX.Server.wcf
 			var bodyData = xrdr.ReadOuterXml();
 			var soap = strMessage.Replace("... stream ...", bodyData);
 
-			Logger.Log("Received:\n" + soap, color: ConsoleColor.DarkGray);
+			Log.NotImportant("Received:\n" + soap);
 
 			return null;
 		}
@@ -29,7 +29,7 @@ namespace WCFX.Server.wcf
 			reply = buffer.CreateMessage();
 			var soap = buffer.CreateMessage().ToString();
 
-			Logger.Log("Sending:\n" + soap + "\n", color: ConsoleColor.DarkGray);
+			Log.NotImportant("Sending:\n" + soap + "\n");
 		}
 	}
 

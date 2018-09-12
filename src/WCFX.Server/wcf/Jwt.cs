@@ -34,7 +34,7 @@ namespace WCFX.Server.wcf
 			}
 			catch (Exception e)
 			{
-				Logger.Log("JWT validation failure: " + e.Message, ConsoleColor.Red);
+				Log.Error("JWT validation failure: " + e.Message);
 				throw;
 			}
 		}
