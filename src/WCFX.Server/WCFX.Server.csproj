@@ -98,6 +98,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Dockerfile" />
+    <None Include="localhost.pfx" />
     <None Include="packages.config" />
     <None Include="Web\index.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

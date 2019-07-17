@@ -127,6 +127,7 @@ namespace WCFX.Server.WCF
 
 		private string GetWindowsUserName()
 		{
+            Program.Log("request. getting windows username...");
 			if (OperationContext.Current != null && OperationContext.Current.ServiceSecurityContext != null && OperationContext.Current.ServiceSecurityContext.WindowsIdentity != null)
 			{
 				return OperationContext.Current.ServiceSecurityContext.WindowsIdentity.Name;

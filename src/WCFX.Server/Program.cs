@@ -16,7 +16,7 @@ namespace WCFX.Server
 			var (serverAddress, netTcpPort, httpsPort) = GetServerConfig();
 
 			Log($"starting Web at 'https://{serverAddress}:{httpsPort}/wb'", ConsoleColor.White);
-			StartWebServer();
+			//StartWebServer();
 			Log($"starting WCF at 'net.tcp://{serverAddress}:{netTcpPort}/WCFX/{typeof(IDossierService).FullName}' and 'https://{serverAddress}:{httpsPort}/WCFX/{typeof(IDossierService).FullName}'", ConsoleColor.White);
 			StartService<IDossierService, DossierService>();
 		}
